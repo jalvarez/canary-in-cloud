@@ -1,32 +1,40 @@
 import urllib
 import time
+import datetime
 
-def check_url(url):
-	result = {	 'code': 0
-				,'time': 0
-			 }
+class Canary:
+	def __init__(self, url):
+		self.url = url
 
-	try:	
-		start_time = time.clock()
-		response = urllib.urlopen(url)
-		result['code'] = response.getcode()
-		end_time = time.clock()
-		result['time'] = (end_time - start_time) * 1000
-	except IOError:
-		result['code'] = 404 # Not found
-	except:
-		result['code'] = 418 # I'm a teapot (RFC 2324)
-	finally:
-		try:
-			reponse.close()
+	def check(self):
+		self.result = {	'timestamp': time.time()
+						,'timestamp_iso': datetime.datetime.now().isoformat() 
+						,'code': 0
+						,'duration': 0
+				 		}
+
+		try:	
+			start_time = time.clock()
+			response = urllib.urlopen(self.url)
+			self.result['code'] = response.getcode()
+			end_time = time.clock()
+			self.result['duration'] = (end_time - start_time) * 1000
+		except IOError:
+			self.result['code'] = 404 # Not found
 		except:
-			None
+			self.result['code'] = 418 # I'm a teapot (RFC 2324)
+		finally:
+			try:
+				reponse.close()
+			except:
+				None
 
-	return result
+		return self.result
 
-def register_response(url, status_code, response_ms):
-	result_table.put_item(Item={ 'url': url
-								,'time': 0 
-								,'status_code': response_code
-								,'response_ms': response_ms
-								})
+	def register_response(self, result_table):
+		result_table.put_item(Item={ 'url': self.url
+									,'time': self.result['timestamp']
+									,'timestamp_iso': self.result['timestamp_iso']
+									,'status_code': self.result['code']
+									,'response_ms': self.result['duration']
+									})
