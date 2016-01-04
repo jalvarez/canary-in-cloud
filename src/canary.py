@@ -7,7 +7,7 @@ class Canary:
 		self.url = url
 
 	def check(self):
-		self.result = {	'timestamp': time.time()
+		self.result = {	'timestamp': str(time.time())
 						,'timestamp_iso': datetime.datetime.now().isoformat() 
 						,'code': 0
 						,'duration': 0
@@ -18,7 +18,7 @@ class Canary:
 			response = urllib.urlopen(self.url)
 			self.result['code'] = response.getcode()
 			end_time = time.clock()
-			self.result['duration'] = (end_time - start_time) * 1000
+			self.result['duration'] = int((end_time - start_time) * 1000)
 		except IOError:
 			self.result['code'] = 404 # Not found
 		except:

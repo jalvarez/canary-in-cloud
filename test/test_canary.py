@@ -1,4 +1,7 @@
 import unittest
+import types
+from decimal import Decimal
+
 import src
 
 class CheckUrlTests(unittest.TestCase):
@@ -22,3 +25,15 @@ class CheckUrlTests(unittest.TestCase):
 		canary = src.Canary('http://www.google.com')
 		result = canary.check()
 		self.assertIsNotNone(result['timestamp'])
+
+	def test_timestamp_is_string(self):
+		canary = src.Canary('http://www.google.com')
+		result = canary.check()
+		timestamp = result['timestamp']
+		self.assertIn(type(timestamp), types.StringTypes)
+
+	def test_duration_is_integer(self):
+		canary = src.Canary('http://www.google.com')
+		result = canary.check()
+		duration = result['duration']
+		self.assertEquals(type(duration), types.IntType)
