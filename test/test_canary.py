@@ -1,6 +1,6 @@
 import unittest
 import types
-from decimal import Decimal
+from mock import Mock
 
 import src
 
@@ -37,3 +37,9 @@ class CheckUrlTests(unittest.TestCase):
 		result = canary.check()
 		duration = result['duration']
 		self.assertEquals(type(duration), types.IntType)
+
+	def test_not_register_without_check(self):
+		canary = src.Canary('http://www.google.com')
+		result_table_mock = Mock()
+		self.assertRaises(src.RegisterWithoutCheckError,
+							canary.register_response, result_table_mock)

@@ -25,16 +25,21 @@ class Canary:
 			self.result['code'] = 418 # I'm a teapot (RFC 2324)
 		finally:
 			try:
-				reponse.close()
+				response.close()
 			except:
 				None
 
 		return self.result
 
 	def register_response(self, result_table):
+		if not hasattr(self, 'result'):
+			raise RegisterWithoutCheckError()
 		result_table.put_item(Item={ 'url': self.url
 									,'time': self.result['timestamp']
 									,'timestamp_iso': self.result['timestamp_iso']
 									,'status_code': self.result['code']
 									,'response_ms': self.result['duration']
 									})
+
+class RegisterWithoutCheckError(Exception):
+	pass
