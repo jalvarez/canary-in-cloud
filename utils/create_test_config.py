@@ -47,7 +47,8 @@ def insert_url2scan(client_id, url):
 									,'active': True
 									,'start_scan_date': now_json()
 									})
-
 insert_config()
 insert_client('test', 'Test client', 'juanmi.alvarez@gmail.com')
-insert_url2scan('test', 'http://www.google.com')
+insert_url2scan('test', 'http://www.mutuatfe.es')
+insert_url2scan('test', 'https://online.mutuatfe.es')
+insert_url2scan('test', 'https://clientes.mutuatfe.es')

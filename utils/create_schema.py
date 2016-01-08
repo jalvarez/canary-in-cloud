@@ -14,13 +14,21 @@ def create_url2scan_table():
 			{
 				'AttributeName': 'client_id',
 				'KeyType': 'HASH'
+			},
+			{
+				'AttributeName': 'url',
+				'KeyType': 'RANGE'
 			}
 		],
 		AttributeDefinitions=[
 			{
 				'AttributeName': 'client_id',
 				'AttributeType': 'S'
-			}
+			},
+			{
+				'AttributeName': 'url',
+				'AttributeType': 'S'
+			},
 		],
 		ProvisionedThroughput=DEFAULT_PROVISIONED_THROUGHPUT
 	)
@@ -95,7 +103,6 @@ def create_config_table():
 		ProvisionedThroughput=DEFAULT_PROVISIONED_THROUGHPUT
 	)
 	
-
 create_url2scan_table()
 create_scan_result_table()
 create_clients_table()
