@@ -1,15 +1,13 @@
 import unittest
-from mock import Mock
-import boto3
-import logging
+
+from dynamodb_test import DynamoDbTestCase
 
 import src
 
-class SmtpDispatcherTests(unittest.TestCase):
+class SmtpDispatcherTests(DynamoDbTestCase):
 	def setUp(self):
-		boto3.set_stream_logger('botocore', logging.WARNING)
-		dynamodb = boto3.resource('dynamodb')
-		config_table = dynamodb.Table('config')
+		super(SmtpDispatcherTests, self).setUp()
+		config_table = self.dynamodb.Table('config')
 		self.config = src.Config(config_table, 'TEST')
 
 	def test_send_email(self):
