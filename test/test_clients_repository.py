@@ -24,3 +24,9 @@ class ClientsRepositoryTests(DynamoDbTestCase):
 		first_url = urls[0]
 		self.assertIsNotNone(first_url['url'])
 		self.assertEqual(first_url['url'][:4], 'http')
+
+	def test_get_clients(self):
+		clients = self.repository.get_clients()
+		self.assertIsNotNone(clients)
+		self.assertGreater(len(clients), 0)
+

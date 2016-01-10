@@ -12,3 +12,8 @@ class ClientsRepository:
 	def get_client_urls(self, client_id):
 		urls = self.url2scan_table.query(KeyConditionExpression=Key('client_id').eq(client_id))
 		return urls['Items']
+
+	def get_clients(self):
+		clients = self.clients_table.scan()
+		return clients['Items']
+
