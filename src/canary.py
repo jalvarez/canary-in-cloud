@@ -3,7 +3,8 @@ import time
 import datetime
 
 class Canary:
-	def __init__(self, url):
+	def __init__(self, result_table, url):
+		self.result_table = result_table
 		self.url = url
 
 	def check(self):
@@ -31,15 +32,15 @@ class Canary:
 
 		return self.result
 
-	def register_response(self, result_table):
+	def register_response(self):
 		if not hasattr(self, 'result'):
 			raise RegisterWithoutCheckError()
-		result_table.put_item(Item={ 'url': self.url
-									,'time': self.result['timestamp']
-									,'timestamp_iso': self.result['timestamp_iso']
-									,'status_code': self.result['code']
-									,'response_ms': self.result['duration']
-									})
+		self.result_table.put_item(Item={ 'url': self.url
+										,'time': self.result['timestamp']
+										,'timestamp_iso': self.result['timestamp_iso']
+										,'status_code': self.result['code']
+										,'response_ms': self.result['duration']
+										})
 
 class RegisterWithoutCheckError(Exception):
 	pass
