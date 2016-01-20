@@ -1,0 +1,16 @@
+profile: admin
+region: eu-west-1
+iam:
+  policy:
+    name: AWSLambdaExecute
+  role:
+    name: CanaryInCloudScanRole
+lambda:
+  name: CanaryInCloudScan
+  zipfile_name: CanaryInCloudScan.zip
+  description: Canary in cloud scanner
+  path: src
+  handler: lambda_handlers.scan_handler
+  runtime: python2.7
+  memory_size: 128
+  timeout: 3
