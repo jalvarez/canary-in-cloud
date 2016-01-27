@@ -14,3 +14,4 @@ lambda:
   runtime: python2.7
   memory_size: 128
   timeout: 3
+  test_data: test/input.json
