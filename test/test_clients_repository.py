@@ -30,3 +30,7 @@ class ClientsRepositoryTests(DynamoDbTestCase):
 		self.assertIsNotNone(clients)
 		self.assertGreater(len(clients), 0)
 
+	def test_get_client_channels(self):
+		channels = self.repository.get_client_channels(self.TEST_CLIENT_ID)
+		self.assertIsNotNone(channels)
+		self.assertTrue(isinstance(channels[0], src.Channel))

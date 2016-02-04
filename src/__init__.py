@@ -6,3 +6,5 @@ from smtp_dispatcher import SmtpDispatcher
 from clients_repository import ClientsRepository
 from canary_factory import CanaryFactory
 from lambda_handlers import scan_handler
+from channel_factory import ChannelFactory
+from channel_factory import Channel
