@@ -2,7 +2,7 @@ from AWS_context import AWSContext
 import logging
 
 def scan_handler(event, handler_context):
-	ctx = AWSContext()
+	ctx = AWSContext('TEST')
 	for client in ctx.clients_repository.get_clients():
 		logging.info("Scanning urls of %s" % client['name'])
 		for client_url in ctx.clients_repository.get_client_urls(client['client_id']):

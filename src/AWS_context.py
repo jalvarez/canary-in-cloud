@@ -1,9 +1,11 @@
 import boto3
 from clients_repository import ClientsRepository
 from canary_factory import CanaryFactory
+from config import Config
 
 class AWSContext():
-	def __init__(self):
+	def __init__(self, enviroment):
+		self.enviroment = enviroment
 		self.init_dynamodb()
 		self.init_clients_repository()
 		self.init_canary_factory()
@@ -14,7 +16,10 @@ class AWSContext():
 	def init_clients_repository(self):
 		clients_table = self.dynamodb.Table('clients')
 		url2scan_table = self.dynamodb.Table('url2scan')
-		self.clients_repository = ClientsRepository(clients_table, url2scan_table)
+		config = Config(self.dynamodb.Table('config'), self.enviroment)
+		self.clients_repository = ClientsRepository(clients_table, \
+													url2scan_table, \
+													config)
 
 	def init_canary_factory(self):
 		scan_result_table = self.dynamodb.Table('scan_result')

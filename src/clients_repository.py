@@ -3,10 +3,10 @@ from boto3.dynamodb.conditions import Key
 from channel_factory import ChannelFactory
 
 class ClientsRepository:
-	def __init__(self, clients_table, url2scan_table):
+	def __init__(self, clients_table, url2scan_table, config):
 		self.clients_table = clients_table
 		self.url2scan_table = url2scan_table
-		self.channel_factory = ChannelFactory()
+		self.channel_factory = ChannelFactory(config)
 
 	def get_client(self, client_id):
 		clients = self.clients_table.query(KeyConditionExpression=Key('client_id').eq(client_id))

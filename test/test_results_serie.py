@@ -17,9 +17,9 @@ class ResultsSerieTests(unittest.TestCase):
 		self.assertIsNone(rs.last_result())
 
 	def check_and_register(self, url):
-		canary = src.Canary(url)
+		canary = src.Canary(self.result_table, url)
 		check = canary.check()
-		canary.register_response(self.result_table)
+		canary.register_response()
 		return check
 
 	def test_last_result_after_check_and_register(self):

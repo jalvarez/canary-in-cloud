@@ -9,8 +9,9 @@ class ClientsRepositoryTests(DynamoDbTestCase):
 		self.TEST_CLIENT_ID = 'test'
 		self.clients_table = self.dynamodb.Table('clients')
 		self.url2scan_table = self.dynamodb.Table('url2scan')
+		config = src.Config(self.dynamodb.Table('config'), 'TEST')
 
-		self.repository = src.ClientsRepository(self.clients_table, self.url2scan_table)
+		self.repository = src.ClientsRepository(self.clients_table, self.url2scan_table, config)
 
 	def test_get_client(self):
 		client = self.repository.get_client(self.TEST_CLIENT_ID)
