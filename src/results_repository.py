@@ -15,3 +15,11 @@ class ResultsSerie:
 		if (len(items) == 0):
 			return None
 		return items[0]
+
+class ResultsRepository:
+	def __init__(self, result_table):
+		self.result_table = result_table
+
+	def resultsSerie_by_url(self, url):
+		return ResultsSerie(url, self.result_table)
+
