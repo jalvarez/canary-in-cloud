@@ -9,3 +9,5 @@ from canary_factory import CanaryFactory
 from lambda_handlers import scan_handler
 from channel_factory import ChannelFactory
 from channel_factory import Channel
+from listener_miners import ListenerMinersFactory
+from listener_miners import NotOkListenerMiner
