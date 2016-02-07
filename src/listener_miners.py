@@ -14,6 +14,11 @@ class ListenerMiner:
 
 	def is_alert(self):
 		return self._is_alert
+	
+	def alert(self, message):
+		channels = self.clients_repository.get_client_channels(self.client_id)
+		for channel in channels:
+			channel.sendMessage(message)
 
 class LastResultListenerMiner(ListenerMiner):
 	def is_result_ok(self, result):

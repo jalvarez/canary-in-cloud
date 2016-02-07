@@ -3,6 +3,17 @@ from smtp_dispatcher import SmtpDispatcher
 class Channel:
 	pass
 
+class Message:
+	def __init__(self, subject, body):
+		self.subject = subject
+		self.body = body
+
+	def get_subject(self):
+		return self.subject
+
+	def get_body(self):
+		return self.body
+
 class EmailChannel(Channel):
 	def __init__(self, config, email_to):
 		self.dispatcher = SmtpDispatcher(config)
