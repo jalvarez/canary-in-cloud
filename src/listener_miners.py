@@ -1,3 +1,5 @@
+from channel_factory import Message
+
 class ListenerMiner:
 	def __init__(self, 	clients_repository, results_repository, \
 						canary_factory, client_id):
@@ -7,10 +9,24 @@ class ListenerMiner:
 		self.client_id = client_id
 		self._is_alert = False
 
-	def listen_client_urls(self, listener):
-		for url in self.clients_repository.get_client_urls(self.client_id):
-			canary = self.canary_factory.new(url)
-			listener(canary, url)
+	def listen_url(self, url, listener):
+		canary = self.canary_factory.new(url)
+		return listener(canary, url)
+
+	def listen_and_alert_url(self, url, listener, alerter):
+		listen_result = self.listen_url(url, listener)
+		if (not listen_result):
+			alerter(url)
+		return listen_result
+
+	def get_urls(self):
+		return self.clients_repository.get_client_urls(self.client_id)
+
+	def listen_and_alert_client_urls(self, listener, alerter):
+		return map(lambda url: self.listen_and_alert_url(url, \
+														 listener, \
+														 alerter),
+					self.get_urls())
 
 	def is_alert(self):
 		return self._is_alert
@@ -20,6 +36,12 @@ class ListenerMiner:
 		for channel in channels:
 			channel.sendMessage(message)
 
+	def listen_urls_and_alert(self, listener, alerter):
+		self._is_alert = reduce(lambda a,b: a or b, \
+								self.listen_and_alert_client_urls(listener, \
+																  alerter),
+								self._is_alert)
+
 class LastResultListenerMiner(ListenerMiner):
 	def is_result_ok(self, result):
 		return (result['status_code'] == 200)
@@ -28,16 +50,24 @@ class LastResultListenerMiner(ListenerMiner):
 		results_serie = self.results_repository.resultsSerie_by_url(url)
 		return results_serie.last_result()
 
+	def listen(self):
+		raise 'Not implemented'
+
 class NotOkListenerMiner(LastResultListenerMiner):
 	def not_ok_listener(self, canary, url):
 		canary_check = canary.check()
 		last_result = self.get_last_result(url)
 		canary.register_response()
-		self._is_alert = self.is_result_ok(last_result) and \
-							not self.is_result_ok(canary_check)
+		return self.is_result_ok(last_result) and \
+				not self.is_result_ok(canary_check)
+
+	def not_ok_alerter(self, url):
+		self.alert(Message("%s is down" % url, \
+						   ("Dear user,\n%s has been detected as DOWN.\n"+
+						    "Regards.\nCanary In Cloud") % url))
 
 	def listen(self):
-		self.listen_client_urls(self.not_ok_listener)
+		self.listen_urls_and_alert(self.not_ok_listener, self.not_ok_alerter)
 	
 class ListenerMinersFactory:
 	def __init__(self, clients_repository, results_repository, canary_factory):

@@ -11,6 +11,16 @@ class AlertAlwaysListenerMiner(src.ListenerMiner):
 	def get_message(self):
 		return self.message
 
+class SequenceListenerMiner(src.ListenerMiner):
+	def set_listen_sequence_results(self, results_sequence):
+		self.results_sequence = results_sequence
+
+	def get_urls(self):
+		return self.results_sequence
+
+	def listen(self):
+		self.listen_urls_and_alert(lambda x,_: x, lambda y,_: None)
+		
 class ListenerMinerTests(unittest.TestCase):
 	def setUp(self):
 		an_urls = [{ 'url': 'http://test.com' }]
@@ -20,6 +30,7 @@ class ListenerMinerTests(unittest.TestCase):
 
 		self.clients_repository_mock = Mock()
 		self.clients_repository_mock.get_client_urls = Mock(return_value=an_urls)
+		self.clients_repository_mock.get_client_channels = Mock(return_value=[])
 		self.results_repository_mock = Mock()
 		self.canary_factory_mock = Mock()
 		self.miners_factory = src.ListenerMinersFactory( \
@@ -65,3 +76,11 @@ class ListenerMinerTests(unittest.TestCase):
 														self.CLIENT_ID)
 		not_ok_listener_miner.listen()
 		self.assertFalse(not_ok_listener_miner.is_alert())
+
+	def test_a_listener_is_alert_when_at_least_a_url_fail(self):
+		a_listener_miner = self.miners_factory.new(SequenceListenerMiner,\
+												   self.CLIENT_ID)
+		a_listener_miner.set_listen_sequence_results([False, True])
+		a_listener_miner.listen()
+		self.assertTrue(a_listener_miner.is_alert())
+		
