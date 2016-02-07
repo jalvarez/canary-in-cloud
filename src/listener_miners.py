@@ -69,6 +69,23 @@ class NotOkListenerMiner(LastResultListenerMiner):
 	def listen(self):
 		self.listen_urls_and_alert(self.not_ok_listener, self.not_ok_alerter)
 	
+class RecoveryListenerMiner(LastResultListenerMiner):
+	def recovery_listener(self, canary, url):
+		canary_check = canary.check()
+		last_result = self.get_last_result(url)
+		canary.register_response()
+		return not self.is_result_ok(last_result) and \
+				self.is_result_ok(canary_check)
+
+	def recovery_alerter(self, url):
+		self.alert(Message("%s is up" % url, \
+						   ("Dear user,\n%s has been detected as UP.\n"+
+						    "Regards.\nCanary In Cloud") % url))
+
+	def listen(self):
+		self.listen_urls_and_alert(self.recovery_listener, \
+								   self.recovery_alerter)
+
 class ListenerMinersFactory:
 	def __init__(self, clients_repository, results_repository, canary_factory):
 		self.clients_repository = clients_repository

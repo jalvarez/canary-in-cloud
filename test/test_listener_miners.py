@@ -84,3 +84,12 @@ class ListenerMinerTests(unittest.TestCase):
 		a_listener_miner.listen()
 		self.assertTrue(a_listener_miner.is_alert())
 		
+	def test_recovery_listener(self):
+		self.config_canary(self.OK_RESULT)
+		self.config_results_serie(self.FAILED_RESULT)
+		recovery_listener_miner = self.miners_factory.new( \
+													src.RecoveryListenerMiner,\
+													self.CLIENT_ID)
+		recovery_listener_miner.listen()
+		self.assertTrue(recovery_listener_miner.is_alert())
+
