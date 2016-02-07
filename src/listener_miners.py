@@ -1,3 +1,5 @@
+import logging
+
 from channel_factory import Message
 
 class ListenerMiner:
@@ -85,6 +87,20 @@ class RecoveryListenerMiner(LastResultListenerMiner):
 	def listen(self):
 		self.listen_urls_and_alert(self.recovery_listener, \
 								   self.recovery_alerter)
+
+class ListenerMinerTeam:
+	def __init__(self):
+		self.members = []
+
+	def add_member(self, member):
+		self.members.append(member)
+
+	def listen(self):
+		for member in self.members:
+			try:
+				member.listen()
+			except Exception as e:
+				logging.error("Listener miner failed: %s" % e)
 
 class ListenerMinersFactory:
 	def __init__(self, clients_repository, results_repository, canary_factory):

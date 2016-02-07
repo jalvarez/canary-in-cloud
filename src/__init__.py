@@ -22,3 +22,4 @@ from listener_miners import ListenerMinersFactory
 from listener_miners import ListenerMiner
 from listener_miners import NotOkListenerMiner
 from listener_miners import RecoveryListenerMiner
+from listener_miners import ListenerMinerTeam
