@@ -4,9 +4,19 @@ from mock import Mock
 import src
 
 class AlertAlwaysListenerMiner(src.ListenerMiner):
-	def listen(self):
+	def __init__(self, 	clients_repository, results_repository, \
+						canary_factory, client_id):
+		src.ListenerMiner.__init__(self, clients_repository, \
+										 results_repository, \
+										 canary_factory, \
+										 client_id)
 		self.message = src.Message('a message', 'oh oh')
+		
+	def alerter(self, url):
 		self.alert(self.message)
+
+	def listen(self):
+		self.listen_urls_and_alert(lambda x,_: True, self.alerter)
 
 	def get_message(self):
 		return self.message
@@ -19,7 +29,7 @@ class SequenceListenerMiner(src.ListenerMiner):
 		return self.results_sequence
 
 	def listen(self):
-		self.listen_urls_and_alert(lambda x,_: x, lambda y,_: None)
+		self.listen_urls_and_alert(lambda x,_: x, lambda y: None)
 		
 class ListenerMinerTests(unittest.TestCase):
 	def setUp(self):
@@ -92,4 +102,13 @@ class ListenerMinerTests(unittest.TestCase):
 													self.CLIENT_ID)
 		recovery_listener_miner.listen()
 		self.assertTrue(recovery_listener_miner.is_alert())
+		
+	def test_recovery_listener_with_no_changes(self):
+		self.config_canary(self.FAILED_RESULT)
+		self.config_results_serie(self.FAILED_RESULT)
+		recovery_listener_miner = self.miners_factory.new( \
+													src.RecoveryListenerMiner,\
+													self.CLIENT_ID)
+		recovery_listener_miner.listen()
+		self.assertFalse(recovery_listener_miner.is_alert())
 

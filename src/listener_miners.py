@@ -17,7 +17,7 @@ class ListenerMiner:
 
 	def listen_and_alert_url(self, url, listener, alerter):
 		listen_result = self.listen_url(url, listener)
-		if (not listen_result):
+		if (listen_result):
 			alerter(url)
 		return listen_result
 
