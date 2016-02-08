@@ -11,4 +11,4 @@ canary = src.Canary(scan_result_table, url)
 result = canary.check()
 canary.register_response()
 
-print "Registrado check de %s: %d (%d ms)" % (url, result['code'], result['duration'])
+print "Registrado check de %s: %d (%d ms)" % (url, result['status_code'], result['duration'])

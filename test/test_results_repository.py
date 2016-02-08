@@ -28,7 +28,7 @@ class ResultsRepositoryTests(unittest.TestCase):
 		check_result = self.check_and_register(url)
 		rs = self.results_repository.resultsSerie_by_url(url)
 		result = rs.last_result()
-		self.assertEquals(	check_result['code'], 
+		self.assertEquals(	check_result['status_code'], 
 							result['status_code'])
 		self.assertEquals(	check_result['timestamp_iso'], 
 							result['timestamp_iso'])
