@@ -22,7 +22,8 @@ class ListenerMiner:
 		return listen_result
 
 	def get_urls(self):
-		return self.clients_repository.get_client_urls(self.client_id)
+		return map(lambda x: x['url'], \
+					self.clients_repository.get_client_urls(self.client_id))
 
 	def listen_and_alert_client_urls(self, listener, alerter):
 		return map(lambda url: self.listen_and_alert_url(url, \
@@ -100,7 +101,8 @@ class ListenerMinerTeam:
 			try:
 				member.listen()
 			except Exception as e:
-				logging.error("Listener miner failed: %s" % e)
+				logging.exception("Listener miner failed: %s" % \
+									self.__class__.__name__)
 
 class ListenerMinersFactory:
 	def __init__(self, clients_repository, results_repository, canary_factory):
