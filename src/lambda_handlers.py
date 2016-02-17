@@ -6,10 +6,10 @@ def _errors_handler(failure):
     failure.trap(Exception)
     try:
         failure.raiseException()
-    except Exception(e):
+    except Exception as e:
         logging.exception(e)
 
-def scan_handler(event, handler_context):
+def _get_all_defers_listen_and_alert(finish_callback):
     ctx = AWSContext('TEST')
     defers = []
     for client in ctx.clients_repository.get_clients():
@@ -17,6 +17,11 @@ def scan_handler(event, handler_context):
         defers.extend(ctx.listen_and_alert_service.listen_and_alert( \
                                                            client['client_id']))
 
-    defer.gatherResults(defers).addErrback(_errors_handler)
+    return defer.gatherResults(defers)\
+            .addCallback(finish_callback)\
+            .addErrback(_errors_handler)
+
+def scan_handler(event, handler_context):
+    _get_all_defers_listen_and_alert(lambda _: None)
     reactor.run()
     return 'Ok'

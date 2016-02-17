@@ -13,6 +13,7 @@ class Canary:
         self.url = url
 
     def _check_response(self, callback, response):
+        print ">>> response.code = %d" % response.code
         self.result['status_code'] = response.code
         start_time = self.result['start_time']
         end_time = time.clock()
@@ -20,6 +21,8 @@ class Canary:
         callback(self.result)
 
     def _check_failure(self, callback, failure):
+        print ">>> failure = %s" % failure
+        failure.printTraceback()
         failure.trap(Exception)
         if (failure.check(DNSLookupError)):
             self.result['status_code'] = 404
@@ -27,8 +30,14 @@ class Canary:
             self.result['status_code'] = 418 # I'm a teapot (RFC 2324)
         callback(self.result)
 
+    def _get_safe_url(self):
+        if (isinstance(self.url, unicode)):
+            return self.url.encode('ascii', 'ignore')
+        return self.url
+
     def _create_request(self, callback):
-        request = self.agent.request('GET', self.url, self.AGENT_HEADERS, None)
+        request = self.agent.request('GET', self._get_safe_url(), \
+                                     self.AGENT_HEADERS, None)
         request.addCallback(partial(self._check_response, callback))
         request.addErrback(partial(self._check_failure, callback))
         return request
@@ -53,6 +62,7 @@ class Canary:
                                   ,'status_code': self.result['status_code']
                                   ,'response_ms': self.result['duration']
                                   })
+        print ">> Put_item in %s" % self.url
 
     def check_and_register(self, after_check_callback):
         request = self.check(after_check_callback)

@@ -6,9 +6,11 @@ from results_repository import ResultsRepository
 from listen_and_alert_service import ListenAndAlertService
 from twisted.internet import reactor
 from twisted.web.client import Agent
+from web_client_context import WebClientContextFactory
 
 class AWSContext():
     def __init__(self, enviroment):
+        self.SEC_TIMEOUT = 120
         self.enviroment = enviroment
         self.init_dynamodb()
         self.init_clients_repository()
@@ -33,7 +35,9 @@ class AWSContext():
 
     def init_canary_factory(self):
         scan_result_table = self.dynamodb.Table('scan_result')
-        agent = Agent(reactor, connectTimeout=1./60 * 5)
+        context_factory = WebClientContextFactory()
+        agent = Agent(reactor, context_factory) #, \
+                      #connectTimeout=self.SEC_TIMEOUT)
         self.canary_factory = CanaryFactory(scan_result_table, agent)
 
     def init_listen_and_alert_service(self):

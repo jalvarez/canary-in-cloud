@@ -13,6 +13,7 @@ from clients_repository import ClientsRepository
 from canary_factory import CanaryFactory
 
 from lambda_handlers import scan_handler
+from lambda_handlers import _get_all_defers_listen_and_alert
 
 from channel_factory import ChannelFactory
 from channel_factory import Channel

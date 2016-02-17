@@ -25,7 +25,7 @@ class ListenerMiner:
     def _alert_callback(self, url, alerter, callback, dummy):
         if (self._is_alert):
             alerter(url)
-        callback()
+        callback(dummy)
         
     def listen_and_alert_url(self, url, listener, alerter, callback):
         listen_result = self.listen_url(url, listener)
@@ -93,9 +93,9 @@ class RecoveryListenerMiner(LastResultListenerMiner):
                             "Regards.\nCanary In Cloud") % url))
 
     def listen(self, callback):
-        self.listen_urls_and_alert(self.recovery_listener, \
-                                   self.recovery_alerter, \
-                                   callback)
+        return self.listen_urls_and_alert(self.recovery_listener, \
+                                          self.recovery_alerter, \
+                                          callback)
 
 class ListenerMinerTeam:
     def __init__(self):

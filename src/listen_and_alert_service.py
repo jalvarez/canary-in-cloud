@@ -17,4 +17,4 @@ class ListenAndAlertService:
                                                                     miner, \
                                                                     client_id))
 
-        return listener_miner_team.listen()
+        return listener_miner_team.listen(lambda _: None)
