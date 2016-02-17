@@ -104,13 +104,15 @@ class ListenerMinerTeam:
     def add_member(self, member):
         self.members.append(member)
 
-    def listen(self):
+    def listen(self, callback):
+        defers = []
         for member in self.members:
             try:
-                member.listen()
+                defers.extend(member.listen(callback))
             except Exception as e:
                 logging.exception("Listener miner failed: %s" % \
                                     self.__class__.__name__)
+        return defers
 
 class ListenerMinersFactory:
     def __init__(self, clients_repository, results_repository, canary_factory):
