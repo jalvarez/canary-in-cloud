@@ -4,37 +4,40 @@ from canary_factory import CanaryFactory
 from config import Config
 from results_repository import ResultsRepository
 from listen_and_alert_service import ListenAndAlertService
+from twisted.internet import reactor
+from twisted.web.client import Agent
 
 class AWSContext():
-	def __init__(self, enviroment):
-		self.enviroment = enviroment
-		self.init_dynamodb()
-		self.init_clients_repository()
-		self.init_canary_factory()
-		self.init_results_repository()
-		self.init_listen_and_alert_service()
+    def __init__(self, enviroment):
+        self.enviroment = enviroment
+        self.init_dynamodb()
+        self.init_clients_repository()
+        self.init_canary_factory()
+        self.init_results_repository()
+        self.init_listen_and_alert_service()
 
-	def init_dynamodb(self):
-		self.dynamodb = boto3.resource('dynamodb')
+    def init_dynamodb(self):
+        self.dynamodb = boto3.resource('dynamodb')
 
-	def init_clients_repository(self):
-		clients_table = self.dynamodb.Table('clients')
-		url2scan_table = self.dynamodb.Table('url2scan')
-		config = Config(self.dynamodb.Table('config'), self.enviroment)
-		self.clients_repository = ClientsRepository(clients_table, \
-													url2scan_table, \
-													config)
+    def init_clients_repository(self):
+        clients_table = self.dynamodb.Table('clients')
+        url2scan_table = self.dynamodb.Table('url2scan')
+        config = Config(self.dynamodb.Table('config'), self.enviroment)
+        self.clients_repository = ClientsRepository(clients_table, \
+                                                    url2scan_table, \
+                                                    config)
 
-	def init_results_repository(self):
-		results_table = self.dynamodb.Table('scan_result')
-		self.results_repository = ResultsRepository(results_table)
+    def init_results_repository(self):
+        results_table = self.dynamodb.Table('scan_result')
+        self.results_repository = ResultsRepository(results_table)
 
-	def init_canary_factory(self):
-		scan_result_table = self.dynamodb.Table('scan_result')
-		self.canary_factory = CanaryFactory(scan_result_table)
+    def init_canary_factory(self):
+        scan_result_table = self.dynamodb.Table('scan_result')
+        agent = Agent(reactor, connectTimeout=1./60 * 5)
+        self.canary_factory = CanaryFactory(scan_result_table, agent)
 
-	def init_listen_and_alert_service(self):
-		self.listen_and_alert_service = ListenAndAlertService( \
-													self.clients_repository, \
-									  				self.results_repository, \
-									  				self.canary_factory)
+    def init_listen_and_alert_service(self):
+        self.listen_and_alert_service = ListenAndAlertService( \
+                                                    self.clients_repository, \
+                                                    self.results_repository, \
+                                                    self.canary_factory)
