@@ -44,7 +44,7 @@ class Canary:
         request = self._create_request(check_callback)
         return request
 
-    def register_response(self):
+    def register_response(self, result=None):
         if not hasattr(self, 'result'):
             raise RegisterWithoutCheckError()
         self.result_table.put_item(Item={ 'url': self.url
@@ -53,6 +53,11 @@ class Canary:
                                   ,'status_code': self.result['status_code']
                                   ,'response_ms': self.result['duration']
                                   })
+
+    def check_and_register(self, after_check_callback):
+        request = self.check(after_check_callback)
+        request.addCallback(self.register_response)
+        return request
 
 class RegisterWithoutCheckError(Exception):
     pass
