@@ -4,6 +4,7 @@ from twisted.internet import reactor, defer
 
 def _errors_handler(failure):
     failure.trap(Exception)
+    reactor.stop()
     try:
         failure.raiseException()
     except Exception as e:
@@ -22,6 +23,6 @@ def _get_all_defers_listen_and_alert(finish_callback):
             .addErrback(_errors_handler)
 
 def scan_handler(event, handler_context):
-    _get_all_defers_listen_and_alert(lambda _: None)
+    _get_all_defers_listen_and_alert(lambda _: reactor.stop())
     reactor.run()
     return 'Ok'
