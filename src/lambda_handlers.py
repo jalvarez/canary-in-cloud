@@ -1,6 +1,7 @@
 from AWS_context import AWSContext
 import logging
 from twisted.internet import reactor, defer
+from sys import exit
 
 def _errors_handler(failure):
     failure.trap(Exception)
@@ -25,4 +26,5 @@ def _get_all_defers_listen_and_alert(finish_callback):
 def scan_handler(event, handler_context):
     _get_all_defers_listen_and_alert(lambda _: reactor.stop())
     reactor.run()
+    exit(0)
     return 'Ok'
