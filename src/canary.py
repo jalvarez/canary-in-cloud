@@ -13,22 +13,19 @@ class Canary:
         self.url = url
 
     def _check_response(self, callback, response):
-        print ">>> response.code = %d" % response.code
         self.result['status_code'] = response.code
         start_time = self.result['start_time']
         end_time = time.clock()
         self.result['duration'] = int((end_time - start_time) * 1000)
-        callback(self.result)
+        return callback(self.result)
 
     def _check_failure(self, callback, failure):
-        print ">>> failure = %s" % failure
-        failure.printTraceback()
         failure.trap(Exception)
         if (failure.check(DNSLookupError)):
             self.result['status_code'] = 404
         else:
             self.result['status_code'] = 418 # I'm a teapot (RFC 2324)
-        callback(self.result)
+        return callback(self.result)
 
     def _get_safe_url(self):
         if (isinstance(self.url, unicode)):
@@ -53,7 +50,7 @@ class Canary:
         request = self._create_request(check_callback)
         return request
 
-    def register_response(self, result=None):
+    def register_response(self, result_check=None):
         if not hasattr(self, 'result'):
             raise RegisterWithoutCheckError()
         self.result_table.put_item(Item={ 'url': self.url
@@ -62,7 +59,7 @@ class Canary:
                                   ,'status_code': self.result['status_code']
                                   ,'response_ms': self.result['duration']
                                   })
-        print ">> Put_item in %s" % self.url
+        return result_check
 
     def check_and_register(self, after_check_callback):
         request = self.check(after_check_callback)
