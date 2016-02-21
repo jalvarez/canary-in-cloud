@@ -24,3 +24,7 @@ from listener_miners import ListenerMiner
 from listener_miners import NotOkListenerMiner
 from listener_miners import RecoveryListenerMiner
 from listener_miners import ListenerMinerTeam
+
+from enviroments_repository import EnviromentsRepository
+
+from AWS_context import AWSContext

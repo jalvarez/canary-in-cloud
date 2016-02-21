@@ -11,8 +11,7 @@ def _errors_handler(failure):
     except Exception as e:
         logging.exception(e)
 
-def _get_all_defers_listen_and_alert(finish_callback):
-    ctx = AWSContext('TEST')
+def _get_all_defers_listen_and_alert(ctx, finish_callback):
     defers = []
     for client in ctx.clients_repository.get_clients():
         logging.info("Scanning urls of %s" % client['name'])
@@ -24,6 +23,7 @@ def _get_all_defers_listen_and_alert(finish_callback):
             .addErrback(_errors_handler)
 
 def scan_handler(event, handler_context):
+    ctx = AWSContext(handler_context.function_name)
     _get_all_defers_listen_and_alert(lambda _: reactor.stop())
     reactor.run()
     exit(0)

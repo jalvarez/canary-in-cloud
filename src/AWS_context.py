@@ -7,11 +7,14 @@ from listen_and_alert_service import ListenAndAlertService
 from twisted.internet import reactor
 from twisted.web.client import Agent
 from web_client_context import WebClientContextFactory
+from enviroments_repository import EnviromentsRepository
 
 class AWSContext():
-    def __init__(self, enviroment):
-        self.enviroment = enviroment
+    def __init__(self, function_name):
         self.init_dynamodb()
+        self.init_enviroments_repository()
+        self.enviroment = self.enviroments_repository. \
+                                    get_enviroment_by_function(function_name)
         self.init_config()
         self.init_clients_repository()
         self.init_canary_factory()
@@ -20,6 +23,10 @@ class AWSContext():
 
     def init_dynamodb(self):
         self.dynamodb = boto3.resource('dynamodb')
+
+    def init_enviroments_repository(self):
+        enviroment_table = self.dynamodb.Table('function_enviroment')
+        self.enviroments_repository = EnviromentsRepository(enviroment_table)
 
     def init_config(self):
         self.config = Config(self.dynamodb.Table('config'), self.enviroment)
