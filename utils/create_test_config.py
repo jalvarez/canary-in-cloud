@@ -25,13 +25,19 @@ def insert_parameter(config_table, enviroment, parameter, value, value_type):
                                     ,'type': value_type
                                 })
 
-def insert_config():
+def insert_function_enviroment(function_name, enviroment):
+    func_enviroment_table = dynamodb.Table('function_enviroment')
+    func_enviroment_table.put_item(Item = {  'function_name': function_name
+                                            ,'enviroment': enviroment
+                                            })
+    
+def insert_config(enviroment):
     config_table = dynamodb.Table('config')
-    insert_string_parameter(config_table, 'TEST', 'SMTP_HOST', 'smtp.gmail.com')
-    insert_integer_parameter(config_table, 'TEST', 'SMTP_PORT', 587)
-    insert_string_parameter(config_table, 'TEST', 'SMTP_USER', 'canaryincloud@gmail.com')
-    insert_string_parameter(config_table, 'TEST', 'SMTP_PASS', '')
-    insert_integer_parameter(config_table, 'TEST', 'TIMEOUT_SEC', 5)
+    insert_string_parameter(config_table, enviroment, 'SMTP_HOST', 'smtp.gmail.com')
+    insert_integer_parameter(config_table, enviroment, 'SMTP_PORT', 587)
+    insert_string_parameter(config_table, enviroment, 'SMTP_USER', 'canaryincloud@gmail.com')
+    insert_string_parameter(config_table, enviroment, 'SMTP_PASS', '')
+    insert_integer_parameter(config_table, enviroment, 'TIMEOUT_SEC', 5)
 
 def insert_client(client_id, name, email):
     client_table = dynamodb.Table('clients')
@@ -48,7 +54,8 @@ def insert_url2scan(client_id, url):
                                     ,'active': True
                                     ,'start_scan_date': now_json()
                                     })
-insert_config()
+insert_function_enviroment('CanaryInCloudScan_TEST', 'TEST')
+insert_config('TEST')
 insert_client('test', 'Test client', 'juanmi.alvarez@gmail.com')
 insert_url2scan('test', 'http://www.mutuatfe.es')
 insert_url2scan('test', 'https://online.mutuatfe.es')
