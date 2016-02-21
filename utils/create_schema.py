@@ -64,11 +64,19 @@ def create_clients_table():
         TableName='clients',
         KeySchema=[
             {
-                'AttributeName': 'client_id',
+                'AttributeName': 'enviroment',
                 'KeyType': 'HASH'
+            },
+            {
+                'AttributeName': 'client_id',
+                'KeyType': 'RANGE'
             }
         ],
         AttributeDefinitions=[
+            {
+                'AttributeName': 'enviroment',
+                'AttributeType': 'S'
+            },
             {
                 'AttributeName': 'client_id',
                 'AttributeType': 'S'

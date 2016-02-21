@@ -27,7 +27,8 @@ class AWSContext():
     def init_clients_repository(self):
         clients_table = self.dynamodb.Table('clients')
         url2scan_table = self.dynamodb.Table('url2scan')
-        self.clients_repository = ClientsRepository(clients_table, \
+        self.clients_repository = ClientsRepository(self.enviroment, \
+                                                    clients_table, \
                                                     url2scan_table, \
                                                     self.config)
 
