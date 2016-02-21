@@ -24,7 +24,7 @@ def _get_all_defers_listen_and_alert(ctx, finish_callback):
 
 def scan_handler(event, handler_context):
     ctx = AWSContext(handler_context.function_name)
-    _get_all_defers_listen_and_alert(lambda _: reactor.stop())
+    _get_all_defers_listen_and_alert(ctx, lambda _: reactor.stop())
     reactor.run()
     exit(0)
     return 'Ok'
