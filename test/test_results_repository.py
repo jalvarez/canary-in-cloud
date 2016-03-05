@@ -20,12 +20,6 @@ class ResultsRepositoryTests(unittest.TestCase):
         rs = self.results_repository.resultsSerie_by_url(url)
         self.assertIsNone(rs.last_result())
 
-    def check_and_register(self, url):
-        canary = src.Canary(self.result_table, url)
-        check = canary.check()
-        canary.register_response()
-        return check
-
     def _get_defer_check_result(self, url):
         canary = src.Canary(self.result_table, Agent(reactor), url)
         return canary.check_and_register(lambda _: _)
@@ -45,5 +39,17 @@ class ResultsRepositoryTests(unittest.TestCase):
         defer = self._get_defer_check_result(url)
         defer.addCallback(partial(self._callback_get_resultsSerie, url))
         defer.addCallback(partial(self._assert_equals, 'status_code'))
-        #defer.addCallback(partial(self._assert_equals, 'timestamp_iso'))
+        defer.addCallback(partial(self._assert_equals, 'timestamp_iso'))
         return defer
+
+    def _check_count_results(self, url, previous_count, dummy):
+        after_count = self.results_repository.count_results_by_url(url)
+        self.assertGreater(after_count, previous_count)
+
+    def test_count_result_after_check_and_register(self):
+        url = 'http://www.google.com'
+        previous_count = self.results_repository.count_results_by_url(url)
+        defer = self._get_defer_check_result(url)
+        defer.addCallback(partial(self._check_count_results, url, previous_count))
+        return defer
+        

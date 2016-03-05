@@ -4,47 +4,42 @@ from functools import partial
 from channel_factory import Message
 
 class ListenerMiner:
-    def __init__(self,  clients_repository, results_repository, \
-                        canary_factory, client_id):
+    def __init__(self, clients_repository, results_repository, client_id):
         self.clients_repository = clients_repository
         self.results_repository = results_repository
-        self.canary_factory = canary_factory
         self.client_id = client_id
         self._is_alert = False
 
-    def _check_listener_result(self, listener, url, result):
-        listener_result = listener(url, result)
+    def _check_listener_result(self, listener, check_result):
+        url = check_result['url']
+        listener_result = listener(url, check_result)
         self._is_alert = self._is_alert or listener_result
+        return check_result
 
-    def listen_url(self, url, listener):
-        canary = self.canary_factory.new(url)
+    def listen_canary(self, canary, listener):
         return canary.check_and_register(partial(self._check_listener_result, \
-                                                 listener, \
-                                                 url))
+                                                 listener))
 
-    def _alert_callback(self, url, alerter, callback, dummy):
+    def _alert_callback(self, alerter, callback, check_result):
+        url = check_result['url']
         if (self._is_alert):
             alerter(url)
-        callback(dummy)
+        callback(check_result)
+        return check_result
         
-    def listen_and_alert_url(self, url, listener, alerter, callback):
-        listen_result = self.listen_url(url, listener)
+    def listen_canary_and_alert(self, canary, listener, alerter, callback):
+        listen_result = self.listen_canary(canary, listener)
         listen_result.addCallback(partial(self._alert_callback, \
-                                          url, \
                                           alerter, \
                                           callback))
         return listen_result
 
-    def get_urls(self):
-        return map(lambda x: x['url'], \
-                    self.clients_repository.get_client_urls(self.client_id))
-
-    def listen_urls_and_alert(self, listener, alerter, callback):
-        return map(lambda url: self.listen_and_alert_url(url, \
-                                                         listener, \
-                                                         alerter, \
-                                                         callback),
-                    self.get_urls())
+    def listen_canaries_and_alert(self, cage, listener, alerter, callback):
+        return map(lambda canary: self.listen_canary_and_alert(canary, \
+                                                               listener, \
+                                                               alerter, \
+                                                               callback),
+                   cage)
 
     def is_alert(self):
         return self._is_alert
@@ -56,7 +51,7 @@ class ListenerMiner:
 
 class LastResultListenerMiner(ListenerMiner):
     def is_result_ok(self, result):
-        return (result['status_code'] == 200)
+        return (result and result['status_code'] == 200)
 
     def get_last_result(self, url):
         results_serie = self.results_repository.resultsSerie_by_url(url)
@@ -76,10 +71,11 @@ class NotOkListenerMiner(LastResultListenerMiner):
                            ("Dear user,\n%s has been detected as DOWN.\n"+
                             "Regards.\nCanary In Cloud") % url))
 
-    def listen(self, callback):
-        return self.listen_urls_and_alert(self.not_ok_listener, \
-                                          self.not_ok_alerter, \
-                                          callback)
+    def listen(self, cage, callback):
+        return self.listen_canaries_and_alert(cage, \
+                                              self.not_ok_listener, \
+                                              self.not_ok_alerter, \
+                                              callback)
     
 class RecoveryListenerMiner(LastResultListenerMiner):
     def recovery_listener(self, url, canary_check):
@@ -92,10 +88,11 @@ class RecoveryListenerMiner(LastResultListenerMiner):
                            ("Dear user,\n%s has been detected as UP.\n"+
                             "Regards.\nCanary In Cloud") % url))
 
-    def listen(self, callback):
-        return self.listen_urls_and_alert(self.recovery_listener, \
-                                          self.recovery_alerter, \
-                                          callback)
+    def listen(self, cage, callback):
+        return self.listen_canaries_and_alert(cage, \
+                                              self.recovery_listener, \
+                                              self.recovery_alerter, \
+                                              callback)
 
 class ListenerMinerTeam:
     def __init__(self):
@@ -104,24 +101,22 @@ class ListenerMinerTeam:
     def add_member(self, member):
         self.members.append(member)
 
-    def listen(self, callback):
+    def listen(self, cage, callback):
         defers = []
         for member in self.members:
             try:
-                defers.extend(member.listen(callback))
+                defers.extend(member.listen(cage, callback))
             except Exception as e:
                 logging.exception("Listener miner failed: %s" % \
-                                    self.__class__.__name__)
+                                    member.__class__.__name__)
         return defers
 
 class ListenerMinersFactory:
-    def __init__(self, clients_repository, results_repository, canary_factory):
+    def __init__(self, clients_repository, results_repository):
         self.clients_repository = clients_repository
         self.results_repository = results_repository
-        self.canary_factory = canary_factory
 
     def new(self, minerClass, client_id):
         return minerClass(self.clients_repository, \
                           self.results_repository, \
-                          self.canary_factory, \
                           client_id)

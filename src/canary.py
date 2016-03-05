@@ -11,6 +11,7 @@ class Canary:
         self.result_table = result_table
         self.agent = agent
         self.url = url
+        self.request = None
 
     def _check_response(self, callback, response):
         self.result['status_code'] = response.code
@@ -32,23 +33,31 @@ class Canary:
             return self.url.encode('ascii', 'ignore')
         return self.url
 
+    def _add_callback_to_request(self, request, callback):
+        request.addCallback(partial(self._check_response, callback))
+        request.addErrback(partial(self._check_failure, callback))
+
     def _create_request(self, callback):
         request = self.agent.request('GET', self._get_safe_url(), \
                                      self.AGENT_HEADERS, None)
-        request.addCallback(partial(self._check_response, callback))
-        request.addErrback(partial(self._check_failure, callback))
+        self._add_callback_to_request(request, callback)
         return request
 
     def check(self, check_callback):
-        self.result = { 'timestamp': str(time.time())
-                        ,'timestamp_iso': datetime.datetime.now().isoformat() 
-                        ,'status_code': 0
-                        ,'duration': 0
-                        ,'start_time': time.clock()
-                        }
+        if (not self.request):
+            now = datetime.datetime.now()
+            self.result = { 'url': self.url
+                            ,'timestamp': str(time.time())
+                            ,'timestamp_iso': now.isoformat() 
+                            ,'status_code': 0
+                            ,'duration': 0
+                            ,'start_time': time.clock()
+                            }
 
-        request = self._create_request(check_callback)
-        return request
+            self.request = self._create_request(check_callback)
+        else:
+            self._add_callback_to_request(self.request, check_callback)
+        return self.request
 
     def register_response(self, result_check=None):
         if not hasattr(self, 'result'):
@@ -62,8 +71,10 @@ class Canary:
         return result_check
 
     def check_and_register(self, after_check_callback):
+        not_has_register_callback = (not self.request)
         request = self.check(after_check_callback)
-        request.addCallback(self.register_response)
+        if (not_has_register_callback):
+            request.addCallback(self.register_response)
         return request
 
 class RegisterWithoutCheckError(Exception):

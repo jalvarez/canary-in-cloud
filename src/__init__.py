@@ -21,6 +21,7 @@ from channel_factory import Message
 
 from listener_miners import ListenerMinersFactory
 from listener_miners import ListenerMiner
+from listener_miners import LastResultListenerMiner
 from listener_miners import NotOkListenerMiner
 from listener_miners import RecoveryListenerMiner
 from listener_miners import ListenerMinerTeam
