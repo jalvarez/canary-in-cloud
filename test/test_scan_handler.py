@@ -1,15 +1,14 @@
 from dynamodb_test import TwistedDynamoDbTestCase
 import twisted.trial.unittest
-from mock import Mock
 from boto3.dynamodb.conditions import Key
 from functools import partial
 
 from src import _get_all_defers_listen_and_alert
 from src import AWSContext
 
-class LambdaHandlersTests(TwistedDynamoDbTestCase):
+class ScanHandlerTests(TwistedDynamoDbTestCase):
     def setUp(self):
-        super(LambdaHandlersTests, self).setUp()
+        super(ScanHandlerTests, self).setUp()
         self.scan_result_table = self.dynamodb.Table('scan_result')
         self.ctx = AWSContext('CanaryInCloudScan_TEST')
 

@@ -29,3 +29,5 @@ from listener_miners import ListenerMinerTeam
 from enviroments_repository import EnviromentsRepository
 
 from AWS_context import AWSContext
+
+from api_handlers import clients_api_handler
