@@ -30,5 +30,4 @@ from enviroments_repository import EnviromentsRepository
 
 from AWS_context import AWSContext
 
-from api_handlers import clients_api_handler
-from api_handlers import client_url_api_handler
+from api_handlers import CanaryInCloudAPI
