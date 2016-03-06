@@ -4,11 +4,12 @@ import json
 
 from src import AWSContext
 from src import clients_api_handler
+from src import client_url_api_handler
 
 class ClientsApiHandlerTests(DynamoDbTestCase):
     def setUp(self):
         super(ClientsApiHandlerTests, self).setUp()
-        self.FUNCTION_NAME = 'CanaryInCloudScan_TEST'
+        self.FUNCTION_NAME = 'CanaryInCloudAPI_TEST'
         self.ctx = AWSContext(self.FUNCTION_NAME)
         self._create_context_mock(self.FUNCTION_NAME)
 
@@ -22,5 +23,12 @@ class ClientsApiHandlerTests(DynamoDbTestCase):
         clients = json.loads(json_response)
         self.assertGreater(len(clients), 0)
         client = clients[0]
-        print client
         self.assertIsNotNone(client['client_id'])
+
+    def test_get_client_url(self):
+        event = { 'client_id': 'test' }
+        json_response = client_url_api_handler(event, self.context_mock)
+        urls = json.loads(json_response)
+        self.assertGreater(len(urls), 0)
+        url = urls[0]
+        self.assertIsNotNone(url['url'])
