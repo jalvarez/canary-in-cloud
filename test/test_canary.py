@@ -12,7 +12,8 @@ class CanaryTests(unittest.TestCase):
         self.result_table_mock = Mock()
 
     def _create_new_canary(self, url):
-        return src.Canary(self.result_table_mock, Agent(reactor), url)
+        agent = Agent(reactor, connectTimeout=0.5)
+        return src.Canary(self.result_table_mock, agent, url)
 
     def _check_callback(self, assert_method, result_func, expected, result):
         assert_method(result_func(result), expected)
@@ -75,3 +76,12 @@ class CanaryTests(unittest.TestCase):
         return self._in_canary_check(canary, \
                                   self.assertEqual, lambda x: x['status_code'],\
                                   418)
+
+    def _check_register(self, dummy):
+        self.assertEquals(len(self.result_table_mock.mock_calls), 1)
+        
+    def test_dont_response_url_but_register(self):
+        canary = self._create_new_canary('http://www.google.com:81')
+        request = canary.check_and_register(lambda _: None)
+        request.addCallback(self._check_register)
+        return request
