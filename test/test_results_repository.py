@@ -22,7 +22,9 @@ class ResultsRepositoryTests(unittest.TestCase):
 
     def _get_defer_check_result(self, url):
         canary = src.Canary(self.result_table, Agent(reactor), url)
-        return canary.check_and_register(lambda _: _)
+        request = canary.check_and_register(lambda _: _)
+        canary.release()
+        return request
 
     def _callback_get_resultsSerie(self, url, check_result):
         rs = self.results_repository.resultsSerie_by_url(url)
