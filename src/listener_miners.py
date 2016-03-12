@@ -109,6 +109,9 @@ class ListenerMinerTeam:
             except Exception as e:
                 logging.exception("Listener miner failed: %s" % \
                                     member.__class__.__name__)
+
+        for canary in cage:
+            canary.release()
         return defers
 
 class ListenerMinersFactory:

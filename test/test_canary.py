@@ -10,6 +10,7 @@ import src
 class CanaryTests(unittest.TestCase):
     def setUp(self):
         self.result_table_mock = Mock()
+        self.result_table_mock.put_item = Mock()
 
     def _create_new_canary(self, url):
         agent = Agent(reactor, connectTimeout=0.5)
@@ -71,6 +72,12 @@ class CanaryTests(unittest.TestCase):
         request = canary.check(callback_1)
         return canary.check(partial(self._check_other_callback, callback_1))
 
+    def test_check_with_double_callback_when_url_dont_response(self):
+        canary = self._create_new_canary('https://www.google.com:81')
+        callback_1 = Mock()
+        request = canary.check(callback_1)
+        return canary.check(partial(self._check_other_callback, callback_1))
+        
     def test_dont_response_url(self):
         canary = self._create_new_canary('http://www.google.com:81')
         return self._in_canary_check(canary, \
@@ -78,10 +85,42 @@ class CanaryTests(unittest.TestCase):
                                   418)
 
     def _check_register(self, dummy):
-        self.assertEquals(len(self.result_table_mock.mock_calls), 1)
+        self.assertEquals(len(self.result_table_mock.put_item.mock_calls), 1)
         
     def test_dont_response_url_but_register(self):
         canary = self._create_new_canary('http://www.google.com:81')
         request = canary.check_and_register(lambda _: None)
+        canary.release()
         request.addCallback(self._check_register)
         return request
+
+    def _register_seq_callback(self, sequence, order, check_result):
+        sequence.append(order)
+
+    def _register_seq_callback2(self, sequence, order, **dummy):
+        sequence.append(order)
+
+    def _check_sequence_callbacks(self, sequence, expected_sequence, dummy):
+        self.assertEquals(sequence, expected_sequence)
+
+    def test_register_after_all_callbacks(self):
+        callback_sequence = []
+        self.result_table_mock.put_item.side_effect=partial(
+                                                self._register_seq_callback2, \
+                                                callback_sequence, \
+                                                3)
+        canary = self._create_new_canary('https://www.google.com:81')
+        canary.check_and_register(partial(self._register_seq_callback, \
+                                          callback_sequence, \
+                                          1))
+
+        request = canary.check_and_register(partial( \
+                                                self._register_seq_callback, \
+                                                callback_sequence, \
+                                                2))
+        canary.release()
+        request.addCallback(partial(self._check_sequence_callbacks, \
+                                    callback_sequence, \
+                                    [1, 2, 3]))
+        return request
+        

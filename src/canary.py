@@ -73,9 +73,11 @@ class Canary:
     def check_and_register(self, after_check_callback):
         not_has_register_callback = (not self.request)
         request = self.check(after_check_callback)
-        if (not_has_register_callback):
-            request.addCallback(self.register_response)
         return request
+
+    def release(self):
+        self.request.addCallback(self.register_response)
+
 
 class RegisterWithoutCheckError(Exception):
     pass
