@@ -11,6 +11,7 @@ class CanaryTests(unittest.TestCase):
     def setUp(self):
         self.result_table_mock = Mock()
         self.result_table_mock.put_item = Mock()
+        self.MOCK_RESPONSE = {'status_code': 0}
 
     def _create_new_canary(self, url):
         agent = Agent(reactor, connectTimeout=0.5)
@@ -68,13 +69,13 @@ class CanaryTests(unittest.TestCase):
 
     def test_check_with_double_callback(self):
         canary = self._create_new_canary('https://www.google.com')
-        callback_1 = Mock()
+        callback_1 = Mock(return_value=self.MOCK_RESPONSE)
         request = canary.check(callback_1)
         return canary.check(partial(self._check_other_callback, callback_1))
 
     def test_check_with_double_callback_when_url_dont_response(self):
         canary = self._create_new_canary('https://www.google.com:81')
-        callback_1 = Mock()
+        callback_1 = Mock(return_value=self.MOCK_RESPONSE)
         request = canary.check(callback_1)
         return canary.check(partial(self._check_other_callback, callback_1))
         
@@ -82,7 +83,7 @@ class CanaryTests(unittest.TestCase):
         canary = self._create_new_canary('http://www.google.com:81')
         return self._in_canary_check(canary, \
                                   self.assertEqual, lambda x: x['status_code'],\
-                                  418)
+                                  408)
 
     def _check_register(self, dummy):
         self.assertEquals(len(self.result_table_mock.put_item.mock_calls), 1)
@@ -96,6 +97,7 @@ class CanaryTests(unittest.TestCase):
 
     def _register_seq_callback(self, sequence, order, check_result):
         sequence.append(order)
+        return self.MOCK_RESPONSE
 
     def _register_seq_callback2(self, sequence, order, **dummy):
         sequence.append(order)

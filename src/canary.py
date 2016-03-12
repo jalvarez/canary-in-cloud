@@ -1,9 +1,11 @@
 import urllib
 import time
 import datetime
+import logging
 from functools import partial
 from twisted.web.http_headers import Headers
 from twisted.internet.error import DNSLookupError
+from twisted.internet.error import TimeoutError
 
 class Canary:
     def __init__(self, result_table, agent, url):
@@ -13,8 +15,11 @@ class Canary:
         self.url = url
         self.request = None
 
-    def _check_response(self, callback, response):
-        self.result['status_code'] = response.code
+    def _response_2_result(self, response):
+        return { 'status_code': response.code }
+
+    def _check_response(self, callback, result):
+        self.result['status_code'] = result['status_code']
         start_time = self.result['start_time']
         end_time = time.clock()
         self.result['duration'] = int((end_time - start_time) * 1000)
@@ -24,7 +29,11 @@ class Canary:
         failure.trap(Exception)
         if (failure.check(DNSLookupError)):
             self.result['status_code'] = 404
+        elif (failure.check(TimeoutError)):
+            self.result['status_code'] = 408
         else:
+            logging.error(failure.getErrorMessage())
+            logging.error(failure.getBriefTraceback())
             self.result['status_code'] = 418 # I'm a teapot (RFC 2324)
         return callback(self.result)
 
@@ -40,6 +49,7 @@ class Canary:
     def _create_request(self, callback):
         request = self.agent.request('GET', self._get_safe_url(), \
                                      self.AGENT_HEADERS, None)
+        request.addCallback(self._response_2_result)
         self._add_callback_to_request(request, callback)
         return request
 
