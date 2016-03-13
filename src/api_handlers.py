@@ -1,4 +1,5 @@
 from AWS_context import AWSContext
+from decimal_encoder import DecimalEncoder
 import json
 
 class CanaryInCloudAPI:
@@ -19,6 +20,17 @@ class CanaryInCloudAPI:
         client_id = event['client_id']
         urls = clients_repository.get_client_urls(client_id)
         return json.dumps(urls)
+        
+    def _results_handler(self, event):
+        results_repository = self.ctx.results_repository
+        clients_repository = self.ctx.clients_repository
+        client_id = event['client_id']
+        url_number = int(event['url_number'])
+        n_last = 10
+        urls = clients_repository.get_client_urls(client_id)
+        url = urls[url_number]['url']
+        results_serie = results_repository.resultsSerie_by_url(url)
+        return json.dumps(results_serie.n_last(n_last), cls=DecimalEncoder)
 
 def lambda_api_handler(event, handler_context):
     ctx = AWSContext(handler_context.function_name)

@@ -6,15 +6,18 @@ class ResultsSerie:
         self.result_table = result_table
 
     def last_result(self):
-        response = self.result_table.query(
-                            KeyConditionExpression=Key('url').eq(self.url),
-                            Limit=1, 
-                            ScanIndexForward=False)
-
-        items = response['Items']
+        items = self.n_last(1)
         if (len(items) == 0):
             return None
         return items[0]
+
+    def n_last(self, n_last):
+        response = self.result_table.query(
+                            KeyConditionExpression=Key('url').eq(self.url),
+                            Limit=n_last, 
+                            ScanIndexForward=False)
+
+        return response['Items']
 
 class ResultsRepository:
     def __init__(self, result_table):

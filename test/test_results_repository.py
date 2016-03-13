@@ -55,3 +55,9 @@ class ResultsRepositoryTests(unittest.TestCase):
         defer.addCallback(partial(self._check_count_results, url, previous_count))
         return defer
         
+    def test_n_lasts(self):
+        url = 'http://www.google.com'
+        resultsSerie = self.results_repository.resultsSerie_by_url(url)
+        n_lasts = resultsSerie.n_last(10)
+        self.assertEquals(len(n_lasts), 10)
+        
