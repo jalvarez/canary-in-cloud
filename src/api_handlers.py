@@ -26,7 +26,10 @@ class CanaryInCloudAPI:
         clients_repository = self.ctx.clients_repository
         client_id = event['client_id']
         url_number = int(event['url_number'])
-        n_last = 10
+        if ('n_items' in event):
+            n_last = int(event['n_items'])
+        else:
+            n_last = 100
         urls = clients_repository.get_client_urls(client_id)
         url = urls[url_number]['url']
         results_serie = results_repository.resultsSerie_by_url(url)

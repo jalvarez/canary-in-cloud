@@ -12,12 +12,24 @@ class ResultsSerie:
         return items[0]
 
     def n_last(self, n_last):
-        response = self.result_table.query(
-                            KeyConditionExpression=Key('url').eq(self.url),
-                            Limit=n_last, 
-                            ScanIndexForward=False)
+        n_last_items = []
+        query_params = { 'KeyConditionExpression': Key('url').eq(self.url), \
+                         'Limit': n_last, \
+                         'ScanIndexForward': False }
 
-        return response['Items']
+        while True:
+            response = self.result_table.query(**query_params)
+            n_last_items.extend(response['Items'])
+
+            if ('LastEvaluatedKey' in response and \
+                response['Count'] > query_params['Limit']):
+                    query_params['Limit'] -= response['Count']
+                    query_params['ExclusiveStartKey'] = \
+                                                    response['LastEvaluatedKey']
+            else:
+                break
+
+        return n_last_items
 
 class ResultsRepository:
     def __init__(self, result_table):

@@ -17,4 +17,12 @@ class ResultsApiHandlerTests(DynamoDbTestCase):
                   'url_number': 1 }
         json_response = self.api.handler('results', event)
         results = json.loads(json_response)
-        self.assertGreater(len(results), 0)
+        self.assertEquals(len(results), 100)
+
+    def test_get_results_50_items(self):
+        event = { 'client_id': 'test', \
+                  'url_number': 1, \
+                  'n_items': 50 }
+        json_response = self.api.handler('results', event)
+        results = json.loads(json_response)
+        self.assertEquals(len(results), 50)
