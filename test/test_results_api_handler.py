@@ -26,3 +26,14 @@ class ResultsApiHandlerTests(DynamoDbTestCase):
         json_response = self.api.handler('results', event)
         results = json.loads(json_response)
         self.assertEquals(len(results), 50)
+
+    def test_get_results_from_a_valid_date(self):
+        a_valid_date = '2016-02-15T12:00:00.000000'
+        event = { 'client_id': 'test', \
+                  'url_number': 1, \
+                  'from': a_valid_date }
+        json_response = self.api.handler('results', event)
+        results = json.loads(json_response)
+        self.assertGreater(len(results), 0)
+        self.assertGreater(results[0]['timestamp_iso'], a_valid_date)
+

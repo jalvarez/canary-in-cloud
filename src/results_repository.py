@@ -1,4 +1,6 @@
 from boto3.dynamodb.conditions import Key
+import dateutil.parser
+import time
 
 class ResultsSerie:
     def __init__(self, url, result_table):
@@ -11,11 +13,19 @@ class ResultsSerie:
             return None
         return items[0]
 
-    def n_last(self, n_last):
+    def _isoformatdate2timestamp(self, datetime_from):
+        datetime = dateutil.parser.parse(datetime_from)
+        return str(time.mktime(datetime.timetuple()))
+
+    def n_last(self, n_last, from_date=None):
         n_last_items = []
         query_params = { 'KeyConditionExpression': Key('url').eq(self.url), \
                          'Limit': n_last, \
                          'ScanIndexForward': False }
+
+        if (from_date):
+            datetime_from = self._isoformatdate2timestamp(from_date)
+            query_params['KeyConditionExpression'] = query_params['KeyConditionExpression'] & Key('time').gte(datetime_from)
 
         while True:
             response = self.result_table.query(**query_params)

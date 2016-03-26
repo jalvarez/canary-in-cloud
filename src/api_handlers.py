@@ -32,8 +32,12 @@ class CanaryInCloudAPI:
             n_last = 100
         urls = clients_repository.get_client_urls(client_id)
         url = urls[url_number]['url']
+        from_date = None
+        if ('from' in event):
+            from_date = event['from']
         results_serie = results_repository.resultsSerie_by_url(url)
-        return json.dumps(results_serie.n_last(n_last), cls=DecimalEncoder)
+        return json.dumps(results_serie.n_last(n_last, from_date), \
+                          cls=DecimalEncoder)
 
 def lambda_api_handler(event, handler_context):
     ctx = AWSContext(handler_context.function_name)
